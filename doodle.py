@@ -21,10 +21,6 @@ brush_mode = MODES[mode_i]
 # Smoothing
 prev_x, prev_y = None, None
 
-# Particle system (limited for performance)
-particles = []
-MAX_PARTICLES = 100  # Limit particle count
-
 # Cached effects (computed once)
 vignette_mask = None
 gradient_bg = None
@@ -36,39 +32,6 @@ def apply_bloom(canvas):
     # Smaller, faster blur
     glow = cv2.GaussianBlur(canvas, (15, 15), 8)
     return cv2.addWeighted(canvas, 1.0, glow, 0.5, 0)
-
-# -------------------------
-# UPGRADE 2: Optimized Particle System
-# -------------------------
-def spawn_particles(x, y, color):
-    # Spawn fewer particles
-    if len(particles) < MAX_PARTICLES:
-        for _ in range(5):  # Reduced from 10
-            particles.append([
-                float(x),
-                float(y),
-                np.random.uniform(-2, 2),
-                np.random.uniform(-2, 2),
-                color,
-                float(np.random.randint(3, 7))  # size
-            ])
-
-def update_particles(canvas):
-    dead = []
-    for i, p in enumerate(particles):
-        p[0] += p[2]
-        p[1] += p[3]
-        p[3] += 0.15  # gravity
-        p[5] -= 0.15  # shrink
-        
-        if p[5] <= 0 or p[0] < 0 or p[0] >= canvas.shape[1] or p[1] < 0 or p[1] >= canvas.shape[0]:
-            dead.append(i)
-            continue
-        
-        cv2.circle(canvas, (int(p[0]), int(p[1])), int(p[5]), p[4], -1)
-    
-    for i in reversed(dead):
-        particles.pop(i)
 
 # -------------------------
 # UPGRADE 3: Optimized Cyberpunk Color Cycling
@@ -181,25 +144,11 @@ while True:
                 sparkle_brush(canvas, x, y)
             elif brush_mode == "fire":
                 fire_brush(canvas, prev_x, prev_y, x, y)
-            
-            # UPGRADE 2: Spawn particles (only if under limit)
-            if len(particles) < MAX_PARTICLES:
-                color1, color2 = get_animated_colors()
-                particle_color = (
-                    int((color1[0] + color2[0]) / 2),
-                    int((color1[1] + color2[1]) / 2),
-                    int((color1[2] + color2[2]) / 2)
-                )
-                spawn_particles(x, y, particle_color)
 
         prev_x, prev_y = x, y
 
         # Draw skeleton on screen
         mp_drawing.draw_landmarks(frame, hand, mp_hands.HAND_CONNECTIONS)
-
-    # UPGRADE 2: Update particles
-    if particles:
-        update_particles(canvas)
 
     # UPGRADE 1: Apply bloom effect (optimized)
     canvas = apply_bloom(canvas)
@@ -225,7 +174,6 @@ while True:
         brush_mode = MODES[mode_i]
     if key == ord('c'):   # clear
         canvas = np.zeros_like(frame, dtype=np.uint8)
-        particles.clear()
         prev_x, prev_y = None, None
     if key == ord('q'):
         break
