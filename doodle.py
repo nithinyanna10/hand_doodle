@@ -22,14 +22,6 @@ brush_mode = MODES[mode_i]
 prev_x, prev_y = None, None
 
 # -------------------------
-# UPGRADE 1: Optimized Neon Bloom Effect
-# -------------------------
-def apply_bloom(canvas):
-    # Smaller, faster blur
-    glow = cv2.GaussianBlur(canvas, (15, 15), 8)
-    return cv2.addWeighted(canvas, 1.0, glow, 0.5, 0)
-
-# -------------------------
 # UPGRADE 3: Optimized Cyberpunk Color Cycling
 # -------------------------
 def get_animated_colors():
@@ -56,9 +48,8 @@ def sparkle_brush(img, x1, y1, x2, y2):
         int((color1[1] + color2[1]) / 2),
         int((color1[2] + color2[2]) / 2)
     )
-    # Draw line with sparkle effect (just a glowing line, no dots)
+    # Draw line with sparkle effect (just a clean line, no glow)
     cv2.line(img, (x1, y1), (x2, y2), sparkle_color, 6)
-    cv2.line(img, (x1, y1), (x2, y2), (255, 255, 255), 2)  # white glow
 
 def fire_brush(img, x1, y1, x2, y2):
     # Fire colors (orange-red spectrum) - cached calculation
@@ -115,9 +106,6 @@ while True:
 
         # Draw skeleton on screen
         mp_drawing.draw_landmarks(frame, hand, mp_hands.HAND_CONNECTIONS)
-
-    # UPGRADE 1: Apply bloom effect (optimized)
-    canvas = apply_bloom(canvas)
 
     # Mix canvas with webcam
     blended = cv2.addWeighted(frame, 0.5, canvas, 1, 0)
