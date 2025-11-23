@@ -25,6 +25,7 @@ Thumbs.db
 # Project specific
 *.mp4
 *.avi
-*.jpg
-*.png
+# Allow images in root for screenshots
+!image*.png
+!image*.jpg
 
