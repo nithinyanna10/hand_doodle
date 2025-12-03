@@ -33,5 +33,4 @@ python doodle.py
 - Uses MediaPipe Hands to detect hand landmarks
 - Tracks index finger tip (landmark 8) for drawing
 - Three different brush modes with unique visual effects
-- Real-time blending of webcam feed with drawing canvas
 
